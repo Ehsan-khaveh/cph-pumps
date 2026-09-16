@@ -10,6 +10,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [newPumpLocation, setNewPumpLocation] = useState(null)
+  const [locationNudge, setLocationNudge] = useState(null)
   const { location: userLocation, error: locationError } = useUserLocation()
 
   async function loadPumps() {
@@ -32,16 +33,41 @@ export default function App() {
     loadPumps()
   }, [])
 
+  useEffect(() => {
+    if (!locationNudge) return
+    const timer = setTimeout(() => setLocationNudge(null), 5000)
+    return () => clearTimeout(timer)
+  }, [locationNudge])
+
   function handlePumpAdded() {
     setNewPumpLocation(null)
     loadPumps()
+  }
+
+  function handleReportClick() {
+    if (userLocation) {
+      setNewPumpLocation(userLocation)
+      return
+    }
+
+    if (!navigator.geolocation) {
+      setLocationNudge("Your browser doesn't support location access.")
+    } else if (locationError) {
+      setLocationNudge(
+        'Location access is blocked. Enable it for this site in your browser settings, then try again.',
+      )
+    } else {
+      setLocationNudge(
+        "Still getting your location — make sure you've allowed location access, then try again in a moment.",
+      )
+    }
   }
 
   return (
     <div className="app">
       <header className="app-header">
         <h1>🚲 CPH Pumps</h1>
-        <p>Crowdsourced bike pump locations in Copenhagen. Click the map to report one.</p>
+        <p>Crowdsourced bike pump locations in Copenhagen.</p>
       </header>
 
       {error && <div className="banner banner-error">Couldn't load pumps: {error}</div>}
@@ -53,17 +79,23 @@ export default function App() {
       )}
       {locationError && (
         <div className="banner banner-warning">
-          Couldn't get your location: {locationError}. You can still browse and add pumps
-          manually.
+          Couldn't get your location: {locationError}. You can still browse pumps on the map.
         </div>
       )}
 
-      <PumpMap
-        pumps={pumps}
-        loading={loading}
-        onMapClick={(latlng) => setNewPumpLocation(latlng)}
-        userLocation={userLocation}
-      />
+      <PumpMap pumps={pumps} loading={loading} userLocation={userLocation} />
+
+      {locationNudge && <div className="location-nudge">{locationNudge}</div>}
+
+      <button
+        type="button"
+        className="report-fab"
+        onClick={handleReportClick}
+        aria-label="Report a pump at your location"
+        title="Report a pump at your location"
+      >
+        +
+      </button>
 
       {newPumpLocation && (
         <AddPumpForm

@@ -72,6 +72,45 @@
   box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.45);
 }
 
+.report-fab {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: #2b6cb0;
+  color: #fff;
+  font-size: 2rem;
+  line-height: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  z-index: 900;
+}
+
+.report-fab:hover {
+  background: #245a94;
+}
+
+.report-fab:active {
+  transform: scale(0.96);
+}
+
+.location-nudge {
+  position: fixed;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(88px, calc(env(safe-area-inset-bottom) + 88px));
+  max-width: 260px;
+  background: #1a1a1a;
+  color: #fff;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 900;
+}
+
 .add-pump-overlay {
   position: fixed;
   inset: 0;

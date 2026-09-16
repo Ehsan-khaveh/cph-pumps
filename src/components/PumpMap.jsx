@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import L from 'leaflet'
-import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from 'react-leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet'
 
 const COPENHAGEN_CENTER = [55.6761, 12.5683]
 
@@ -10,15 +10,6 @@ const userLocationIcon = L.divIcon({
   iconSize: [18, 18],
   iconAnchor: [9, 9],
 })
-
-function ClickHandler({ onMapClick }) {
-  useMapEvents({
-    click(e) {
-      onMapClick(e.latlng)
-    },
-  })
-  return null
-}
 
 function RecenterOnFirstFix({ location }) {
   const map = useMap()
@@ -43,14 +34,13 @@ function navigationUrl(pump) {
   return `https://www.google.com/maps/dir/?api=1&destination=${pump.lat},${pump.lng}`
 }
 
-export default function PumpMap({ pumps, loading, onMapClick, userLocation }) {
+export default function PumpMap({ pumps, loading, userLocation }) {
   return (
     <MapContainer center={COPENHAGEN_CENTER} zoom={13} className="pump-map">
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
-      <ClickHandler onMapClick={onMapClick} />
       <RecenterOnFirstFix location={userLocation} />
       {!loading &&
         pumps.map((pump) => (
