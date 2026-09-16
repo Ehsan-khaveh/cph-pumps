@@ -16,6 +16,10 @@ function formatHours(pump) {
   return `${pump.opens_at.slice(0, 5)}–${pump.closes_at.slice(0, 5)}`
 }
 
+function navigationUrl(pump) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${pump.lat},${pump.lng}`
+}
+
 export default function PumpMap({ pumps, loading, onMapClick }) {
   return (
     <MapContainer center={COPENHAGEN_CENTER} zoom={13} className="pump-map">
@@ -37,6 +41,15 @@ export default function PumpMap({ pumps, loading, onMapClick }) {
                   <em>{pump.notes}</em>
                 </>
               )}
+              <br />
+              <a
+                className="navigate-link"
+                href={navigationUrl(pump)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Navigate →
+              </a>
             </Popup>
           </Marker>
         ))}
