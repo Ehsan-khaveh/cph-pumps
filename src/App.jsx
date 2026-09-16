@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
+import { useUserLocation } from './hooks/useUserLocation'
 import PumpMap from './components/PumpMap'
 import AddPumpForm from './components/AddPumpForm'
 import './App.css'
@@ -9,6 +10,7 @@ export default function App() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [newPumpLocation, setNewPumpLocation] = useState(null)
+  const { location: userLocation, error: locationError } = useUserLocation()
 
   async function loadPumps() {
     setLoading(true)
@@ -49,11 +51,18 @@ export default function App() {
           <code>.env</code> and fill in your project's URL and anon key.
         </div>
       )}
+      {locationError && (
+        <div className="banner banner-warning">
+          Couldn't get your location: {locationError}. You can still browse and add pumps
+          manually.
+        </div>
+      )}
 
       <PumpMap
         pumps={pumps}
         loading={loading}
         onMapClick={(latlng) => setNewPumpLocation(latlng)}
+        userLocation={userLocation}
       />
 
       {newPumpLocation && (

@@ -1,6 +1,15 @@
-import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet'
+import { useEffect, useRef } from 'react'
+import L from 'leaflet'
+import { MapContainer, TileLayer, Marker, Popup, Circle, useMap, useMapEvents } from 'react-leaflet'
 
 const COPENHAGEN_CENTER = [55.6761, 12.5683]
+
+const userLocationIcon = L.divIcon({
+  className: 'user-location-marker',
+  html: '<span class="user-location-dot"></span>',
+  iconSize: [18, 18],
+  iconAnchor: [9, 9],
+})
 
 function ClickHandler({ onMapClick }) {
   useMapEvents({
@@ -8,6 +17,20 @@ function ClickHandler({ onMapClick }) {
       onMapClick(e.latlng)
     },
   })
+  return null
+}
+
+function RecenterOnFirstFix({ location }) {
+  const map = useMap()
+  const hasCenteredRef = useRef(false)
+
+  useEffect(() => {
+    if (location && !hasCenteredRef.current) {
+      map.setView([location.lat, location.lng], 15)
+      hasCenteredRef.current = true
+    }
+  }, [location, map])
+
   return null
 }
 
@@ -20,7 +43,7 @@ function navigationUrl(pump) {
   return `https://www.google.com/maps/dir/?api=1&destination=${pump.lat},${pump.lng}`
 }
 
-export default function PumpMap({ pumps, loading, onMapClick }) {
+export default function PumpMap({ pumps, loading, onMapClick, userLocation }) {
   return (
     <MapContainer center={COPENHAGEN_CENTER} zoom={13} className="pump-map">
       <TileLayer
@@ -28,6 +51,7 @@ export default function PumpMap({ pumps, loading, onMapClick }) {
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <ClickHandler onMapClick={onMapClick} />
+      <RecenterOnFirstFix location={userLocation} />
       {!loading &&
         pumps.map((pump) => (
           <Marker key={pump.id} position={[pump.lat, pump.lng]}>
@@ -53,6 +77,18 @@ export default function PumpMap({ pumps, loading, onMapClick }) {
             </Popup>
           </Marker>
         ))}
+      {userLocation && (
+        <>
+          <Circle
+            center={[userLocation.lat, userLocation.lng]}
+            radius={userLocation.accuracy}
+            pathOptions={{ color: '#2b6cb0', fillColor: '#2b6cb0', fillOpacity: 0.12, weight: 1 }}
+          />
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userLocationIcon}>
+            <Popup>You are here</Popup>
+          </Marker>
+        </>
+      )}
     </MapContainer>
   )
 }
