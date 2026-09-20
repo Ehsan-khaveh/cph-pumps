@@ -91,10 +91,12 @@ export default function App() {
         type="button"
         className="report-fab"
         onClick={handleReportClick}
-        aria-label="Report a pump at your location"
         title="Report a pump at your location"
       >
-        +
+        <span className="report-fab-icon" aria-hidden="true">
+          +
+        </span>
+        Report a new pump
       </button>
 
       {newPumpLocation && (
