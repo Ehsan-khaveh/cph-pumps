@@ -54,7 +54,7 @@ export default function PumpMap({ pumps, loading, userLocation }) {
           <Marker
             key={pump.id}
             position={[pump.lat, pump.lng]}
-            icon={pump.source === 'shop' ? shopIcon : undefined}
+            {...(pump.source === 'shop' ? { icon: shopIcon } : {})}
           >
             <Popup>
               <strong>{pump.name || 'Bike pump'}</strong>
