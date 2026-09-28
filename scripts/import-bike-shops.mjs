@@ -45,6 +45,23 @@ const COPENHAGEN_CENTER = { lat: 55.6761, lng: 12.5683 }
 const SEARCH_RADIUS_METERS = 20_000 // ~20km: Copenhagen, Frederiksberg, and close suburbs
 const BATCH_SIZE = 50
 
+// A plain bounding box is far cheaper for Overpass to evaluate than an
+// `around:` radius filter (which computes a distance to every candidate
+// node) — using one instead is what keeps this query from timing out.
+function boundingBoxAround({ lat, lng }, radiusMeters) {
+  const METERS_PER_DEGREE_LAT = 111_320
+  const deltaLat = radiusMeters / METERS_PER_DEGREE_LAT
+  const metersPerDegreeLng = METERS_PER_DEGREE_LAT * Math.cos((lat * Math.PI) / 180)
+  const deltaLng = radiusMeters / metersPerDegreeLng
+
+  return {
+    south: lat - deltaLat,
+    west: lng - deltaLng,
+    north: lat + deltaLat,
+    east: lng + deltaLng,
+  }
+}
+
 const supabaseUrl = process.env.VITE_SUPABASE_URL
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY
 
@@ -112,10 +129,11 @@ async function queryOverpass(endpoint, query) {
 }
 
 async function fetchBikeShops() {
+  const { south, west, north, east } = boundingBoxAround(COPENHAGEN_CENTER, SEARCH_RADIUS_METERS)
   const query = `
     [out:json][timeout:60];
     (
-      node["shop"="bicycle"](around:${SEARCH_RADIUS_METERS},${COPENHAGEN_CENTER.lat},${COPENHAGEN_CENTER.lng});
+      node["shop"="bicycle"](${south},${west},${north},${east});
     );
     out body;
   `
