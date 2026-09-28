@@ -83,6 +83,34 @@ function parseOpeningHours(raw) {
   return { opensAt: null, closesAt: null }
 }
 
+// The main instance sometimes 406s generic/scripted requests. Kumi's mirror
+// runs the same Overpass QL API and is used as a fallback if that happens.
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+]
+
+async function queryOverpass(endpoint, query) {
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+      Accept: 'application/json',
+      'User-Agent': 'cph-pumps-import-script (https://github.com/Ehsan-khaveh/cph-pumps)',
+    },
+    body: `data=${encodeURIComponent(query)}`,
+  })
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => '')
+    throw new Error(
+      `${endpoint} responded ${response.status} ${response.statusText}${body ? `\n${body.slice(0, 500)}` : ''}`,
+    )
+  }
+
+  return response.json()
+}
+
 async function fetchBikeShops() {
   const query = `
     [out:json][timeout:60];
@@ -92,18 +120,20 @@ async function fetchBikeShops() {
     out body;
   `
 
-  const response = await fetch('https://overpass-api.de/api/interpreter', {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain' },
-    body: query,
-  })
-
-  if (!response.ok) {
-    throw new Error(`Overpass request failed: ${response.status} ${response.statusText}`)
+  const errors = []
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      const data = await queryOverpass(endpoint, query)
+      return data.elements
+    } catch (err) {
+      console.warn(`${endpoint} failed, trying next endpoint if any…`)
+      errors.push(err)
+    }
   }
 
-  const data = await response.json()
-  return data.elements
+  throw new Error(
+    `All Overpass endpoints failed:\n${errors.map((e) => `- ${e.message}`).join('\n')}`,
+  )
 }
 
 function toPumpRow(element) {
