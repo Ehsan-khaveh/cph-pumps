@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "import:bike-shops": "node scripts/import-bike-shops.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",

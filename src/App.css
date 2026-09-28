@@ -72,6 +72,24 @@
   box-shadow: 0 0 0 2px rgba(43, 108, 176, 0.45);
 }
 
+.shop-marker-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #d97706;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  font-size: 14px;
+}
+
+.pump-source-label {
+  font-size: 0.75rem;
+  color: #92700c;
+}
+
 .report-fab {
   position: fixed;
   right: max(20px, env(safe-area-inset-right));

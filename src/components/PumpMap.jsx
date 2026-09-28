@@ -11,6 +11,13 @@ const userLocationIcon = L.divIcon({
   iconAnchor: [9, 9],
 })
 
+const shopIcon = L.divIcon({
+  className: 'shop-marker',
+  html: '<span class="shop-marker-dot">🔧</span>',
+  iconSize: [26, 26],
+  iconAnchor: [13, 13],
+})
+
 function RecenterOnFirstFix({ location }) {
   const map = useMap()
   const hasCenteredRef = useRef(false)
@@ -44,15 +51,33 @@ export default function PumpMap({ pumps, loading, userLocation }) {
       <RecenterOnFirstFix location={userLocation} />
       {!loading &&
         pumps.map((pump) => (
-          <Marker key={pump.id} position={[pump.lat, pump.lng]}>
+          <Marker
+            key={pump.id}
+            position={[pump.lat, pump.lng]}
+            icon={pump.source === 'shop' ? shopIcon : undefined}
+          >
             <Popup>
               <strong>{pump.name || 'Bike pump'}</strong>
+              {pump.source === 'shop' && (
+                <>
+                  <br />
+                  <span className="pump-source-label">Bike shop · hours may vary</span>
+                </>
+              )}
               <br />
               {formatHours(pump)}
               {pump.notes && (
                 <>
                   <br />
                   <em>{pump.notes}</em>
+                </>
+              )}
+              {pump.source_url && (
+                <>
+                  <br />
+                  <a href={pump.source_url} target="_blank" rel="noopener noreferrer">
+                    Website
+                  </a>
                 </>
               )}
               <br />
