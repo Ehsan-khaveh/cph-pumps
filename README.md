@@ -6,6 +6,7 @@ A crowdsourced map of bike pumps in Copenhagen — where they are, and when they
 
 - [Vite](https://vite.dev/) + React
 - [Leaflet](https://leafletjs.com/) + OpenStreetMap tiles (no API key needed)
+- [Nominatim](https://nominatim.org/) for address → coordinates geocoding (no API key needed)
 - [Supabase](https://supabase.com/) for storage (Postgres + auto-generated REST API)
 
 ## Setup
@@ -32,7 +33,13 @@ npm install
 npm run dev
 ```
 
-Open the printed local URL. Tap **Report a new pump** to add one at your current location.
+Open the printed local URL. Tap **Report a new pump**, then either use your current location or switch to "Enter an address" and search for one.
+
+### Geocoding addresses
+
+Typing an address and pressing **Find** resolves it to coordinates via OpenStreetMap's [Nominatim](https://nominatim.org/release-docs/latest/api/Search/) search API, called directly from the browser — no backend, no API key. Results are restricted to Denmark (`countrycodes=dk`).
+
+This only runs on an explicit button press, never on keystroke — Nominatim's [usage policy](https://operations.osmfoundation.org/policies/nominatim/) is built around on-demand lookups (roughly 1 request/second) and explicitly disallows autocomplete-style querying on every keystroke. For a browser-based app like this, the browser's own `Referer` header is sufficient identification — no custom header setup needed.
 
 ## Seeding data from OpenStreetMap
 

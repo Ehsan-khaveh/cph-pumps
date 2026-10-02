@@ -2,15 +2,14 @@ import { useEffect, useState } from 'react'
 import { supabase } from './supabaseClient'
 import { useUserLocation } from './hooks/useUserLocation'
 import PumpMap from './components/PumpMap'
-import AddPumpForm from './components/AddPumpForm'
+import ReportPumpForm from './components/ReportPumpForm'
 import './App.css'
 
 export default function App() {
   const [pumps, setPumps] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [newPumpLocation, setNewPumpLocation] = useState(null)
-  const [locationNudge, setLocationNudge] = useState(null)
+  const [reportFormOpen, setReportFormOpen] = useState(false)
   const { location: userLocation, error: locationError } = useUserLocation()
 
   async function loadPumps() {
@@ -33,34 +32,9 @@ export default function App() {
     loadPumps()
   }, [])
 
-  useEffect(() => {
-    if (!locationNudge) return
-    const timer = setTimeout(() => setLocationNudge(null), 5000)
-    return () => clearTimeout(timer)
-  }, [locationNudge])
-
   function handlePumpAdded() {
-    setNewPumpLocation(null)
+    setReportFormOpen(false)
     loadPumps()
-  }
-
-  function handleReportClick() {
-    if (userLocation) {
-      setNewPumpLocation(userLocation)
-      return
-    }
-
-    if (!navigator.geolocation) {
-      setLocationNudge("Your browser doesn't support location access.")
-    } else if (locationError) {
-      setLocationNudge(
-        'Location access is blocked. Enable it for this site in your browser settings, then try again.',
-      )
-    } else {
-      setLocationNudge(
-        "Still getting your location — make sure you've allowed location access, then try again in a moment.",
-      )
-    }
   }
 
   return (
@@ -85,13 +59,11 @@ export default function App() {
 
       <PumpMap pumps={pumps} loading={loading} userLocation={userLocation} />
 
-      {locationNudge && <div className="location-nudge">{locationNudge}</div>}
-
       <button
         type="button"
         className="report-fab"
-        onClick={handleReportClick}
-        title="Report a pump at your location"
+        onClick={() => setReportFormOpen(true)}
+        title="Report a new pump"
       >
         <span className="report-fab-icon" aria-hidden="true">
           +
@@ -99,10 +71,10 @@ export default function App() {
         Report a new pump
       </button>
 
-      {newPumpLocation && (
-        <AddPumpForm
-          location={newPumpLocation}
-          onCancel={() => setNewPumpLocation(null)}
+      {reportFormOpen && (
+        <ReportPumpForm
+          userLocation={userLocation}
+          onCancel={() => setReportFormOpen(false)}
           onAdded={handlePumpAdded}
         />
       )}
